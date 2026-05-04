@@ -4,6 +4,7 @@ from anthropic import Anthropic
 import config
 from agent import load_or_create
 from github import create_pr, delete_branch
+from reviewer import review_pr
 
 
 def main():
@@ -80,6 +81,7 @@ def main():
                             )
                             if success:
                                 pr_created = True
+                                review_pr(output)
                             client.beta.sessions.events.send(
                                 session.id,
                                 events=[

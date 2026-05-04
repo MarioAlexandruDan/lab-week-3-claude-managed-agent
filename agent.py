@@ -23,6 +23,8 @@ When given a task:
 
 ## 🧭 What and Why
 
+<short description of the problem and why this change is the right fix>
+
 ### Changes included:
 - <bullet per logical change>
 
