@@ -1,0 +1,7 @@
+agent.json
+__pycache__/
+*.pyc
+.claude/
+venv/
+.env
+.idea/
