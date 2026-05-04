@@ -1,3 +1,4 @@
+"""Fetches a PR diff, asks Claude to review it, and posts the review as a PR comment."""
 import os
 import subprocess
 from anthropic import Anthropic
@@ -12,8 +13,7 @@ Review the diff below. Focus on:
 
 Be concise. Use bullet points. If the change looks good, say so briefly.
 
-Diff:
-{diff}"""
+Diff:"""
 
 
 def review_pr(pr_url: str) -> None:
@@ -34,7 +34,7 @@ def review_pr(pr_url: str) -> None:
         model="claude-sonnet-4-6",
         max_tokens=1024,
         messages=[
-            {"role": "user", "content": _REVIEW_PROMPT.format(diff=diff)}
+            {"role": "user", "content": f"{_REVIEW_PROMPT}\n\n{diff}"}
         ],
     )
     review_body = next(
