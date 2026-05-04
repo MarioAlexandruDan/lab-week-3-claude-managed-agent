@@ -1,4 +1,4 @@
-import sys
+import argparse
 from anthropic import Anthropic
 
 import config
@@ -8,11 +8,12 @@ from reviewer import review_pr
 
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: python3 main.py "<task>"')
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Claude Managed Agent — task manager pipeline")
+    parser.add_argument("task", help="Task description for the agent")
+    parser.add_argument("--review", action="store_true", help="Post a Claude review on the created PR")
+    args = parser.parse_args()
 
-    task = sys.argv[1]
+    task = args.task
     client = Anthropic()
 
     # ── Step 1: Agent + Environment ───────────────────────────────────────────
@@ -81,7 +82,8 @@ def main():
                             )
                             if success:
                                 pr_created = True
-                                review_pr(output)
+                                if args.review:
+                                    review_pr(output)
                             client.beta.sessions.events.send(
                                 session.id,
                                 events=[
