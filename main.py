@@ -1,3 +1,4 @@
+"""Entry point: parses args, creates a session, streams events, and calls GitHub helpers."""
 import argparse
 from anthropic import Anthropic
 
@@ -44,6 +45,7 @@ def main():
     pr_created = False
 
     try:
+        # Stream must be opened before sending the message so early events aren't missed.
         with client.beta.sessions.events.stream(session.id) as stream:
             client.beta.sessions.events.send(
                 session.id,
@@ -55,6 +57,8 @@ def main():
                 ],
             )
 
+            # Tracks whether the cursor is at a line start to avoid spurious blank lines
+            # between consecutive tool-use events.
             at_line_start = True
             for event in stream:
                 match event.type:

@@ -1,3 +1,4 @@
+"""Agent and environment persistence: creates them once and reuses across runs via agent.json."""
 import json
 from anthropic import Anthropic
 from config import CONFIG_FILE
@@ -53,10 +54,11 @@ _TOOLS = [
 
 
 def load_or_create(client: Anthropic) -> tuple[str, str]:
+    """Return (agent_id, environment_id), reading from agent.json if it exists or creating and persisting new ones."""
     if CONFIG_FILE.exists():
-        config = json.loads(CONFIG_FILE.read_text())
-        agent_id = config["agent_id"]
-        environment_id = config["environment_id"]
+        saved_config = json.loads(CONFIG_FILE.read_text())
+        agent_id = saved_config["agent_id"]
+        environment_id = saved_config["environment_id"]
         print(f"Loaded agent: {agent_id}")
         print(f"Loaded environment: {environment_id}")
         return agent_id, environment_id

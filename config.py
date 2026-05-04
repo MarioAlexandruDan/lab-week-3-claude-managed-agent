@@ -1,3 +1,4 @@
+"""Environment configuration and constants loaded from .env at import time."""
 import os
 import sys
 from pathlib import Path
@@ -15,5 +16,6 @@ def _require(name: str) -> str:
 ANTHROPIC_API_KEY = _require("ANTHROPIC_API_KEY")
 GITHUB_TOKEN = _require("GITHUB_TOKEN")
 REPO_URL = os.environ.get("REPO_URL", "https://github.com/MarioAlexandruDan/lab-week-3-task-manager")
+# "owner/repo" extracted from the full URL — used wherever gh CLI needs --repo
 REPO_SLUG = "/".join(REPO_URL.rstrip("/").split("/")[-2:])
 CONFIG_FILE = Path("agent.json")

@@ -1,9 +1,11 @@
+"""GitHub helpers: create pull requests and delete branches via the gh CLI."""
 import os
 import subprocess
 from config import GITHUB_TOKEN, REPO_SLUG
 
 
 def create_pr(title: str, body: str, branch: str) -> tuple[str, bool]:
+    """Create a PR and return (pr_url, True) on success or (error_message, False) on failure."""
     result = subprocess.run(
         [
             "gh", "pr", "create",

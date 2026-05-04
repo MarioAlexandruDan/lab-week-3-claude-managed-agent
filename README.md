@@ -22,6 +22,8 @@ A CLI pipeline that uses [Claude Managed Agents](https://docs.anthropic.com/en/d
 
 ## Setup
 
+Requires Python 3.10+.
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
