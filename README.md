@@ -4,17 +4,21 @@ A CLI pipeline that uses [Claude Managed Agents](https://docs.anthropic.com/en/d
 
 ## How it works
 
-1. **Agent + Environment** — Created once and persisted in `agent.json`. The agent has access to bash, file tools, and a custom `create_pr` tool.
+1. **Agent + Environment** — Created once and persisted in `agent.json`. Reused on every subsequent run. The agent has access to bash, file tools, and a custom `create_pr` tool.
 2. **Session** — A new session is created per run, with the GitHub repo mounted at `/workspace/repo`.
-3. **Stream** — The task is sent as a user message; events are streamed back in real time. If the run fails before a PR is created, any branch pushed by the agent is automatically deleted.
+3. **Stream** — The task is sent as a user message and events are streamed back in real time.
+4. **Multi-turn** — When the agent goes idle you're prompted to reply or press Enter to finish. This lets you answer clarifying questions without restarting the pipeline.
+5. **PR review** — After a PR is created you're asked whether to post a Claude review as a comment. The PR URL is always printed at the end.
+6. **Cleanup** — If the run fails before a PR is created, any branch the agent pushed is automatically deleted.
 
 ## Project structure
 
 ```
-├── main.py          # entry point: arg parse, session, stream
+├── main.py          # entry point: session, multi-turn stream loop
 ├── config.py        # dotenv load, env validation, constants
-├── agent.py         # agent + environment persistence
+├── agent.py         # agent + environment creation and persistence
 ├── github.py        # create_pr and delete_branch helpers
+├── reviewer.py      # fetches diff, calls Claude, posts PR review comment
 ├── requirements.txt
 ├── .env             # secrets (gitignored)
 └── .env.example
@@ -40,10 +44,16 @@ The `.env` file is loaded automatically on startup — no manual export needed.
 
 ## Usage
 
+Run from the project root with the venv activated:
+
 ```bash
 python3 main.py "fix the bug in complete_task"
 python3 main.py "add a search command that filters tasks by title keyword"
 ```
+
+The pipeline is interactive — when the agent finishes a turn you'll be prompted to reply or press Enter to exit. If a PR is created you'll also be asked whether to post a Claude review.
+
+**Resetting the agent:** delete `agent.json` to force a new agent and environment to be created on the next run (required after changing the system prompt in `agent.py`).
 
 ## Environment variables
 

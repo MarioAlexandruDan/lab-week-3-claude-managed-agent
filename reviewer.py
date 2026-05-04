@@ -4,16 +4,14 @@ import subprocess
 from anthropic import Anthropic
 from config import GITHUB_TOKEN
 
-_REVIEW_PROMPT = """You are reviewing a pull request for a Python CLI task manager app.
+_SYSTEM_PROMPT = """You are reviewing a pull request for a Python CLI task manager app.
 
 Review the diff below. Focus on:
 - Correctness and logic errors
 - Edge cases that aren't handled
 - Code clarity
 
-Be concise. Use bullet points. If the change looks good, say so briefly.
-
-Diff:"""
+Be concise. Use bullet points. If the change looks good, say so briefly."""
 
 
 def review_pr(pr_url: str) -> None:
@@ -33,8 +31,9 @@ def review_pr(pr_url: str) -> None:
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1024,
+        system=_SYSTEM_PROMPT,
         messages=[
-            {"role": "user", "content": f"{_REVIEW_PROMPT}\n\n{diff}"}
+            {"role": "user", "content": diff}
         ],
     )
     review_body = next(
@@ -49,6 +48,6 @@ def review_pr(pr_url: str) -> None:
         env={**os.environ, "GH_TOKEN": GITHUB_TOKEN},
     )
     if review_result.returncode == 0:
-        print(f"[Review posted: {pr_url}]")
+        print("[Review posted]")
     else:
         print(f"Failed to post review: {review_result.stderr.strip()}")

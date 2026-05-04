@@ -1,4 +1,13 @@
-"""Entry point: parses args, creates a session, streams events, and calls GitHub helpers."""
+"""Entry point: parses the task arg, runs an interactive multi-turn session, and calls GitHub helpers.
+
+Flow:
+  1. Load or create the persistent agent + environment (agent.json).
+  2. Create a new session with the GitHub repo mounted.
+  3. Send the task and stream events until idle.
+  4. On idle, prompt for a reply — continue the session or press Enter to finish.
+  5. If a PR was created, offer a Claude review and print the PR URL at the end.
+  6. On error before PR creation, automatically delete any branch the agent pushed.
+"""
 import argparse
 from anthropic import Anthropic
 
@@ -11,7 +20,6 @@ from reviewer import review_pr
 def main():
     parser = argparse.ArgumentParser(description="Claude Managed Agent — task manager pipeline")
     parser.add_argument("task", help="Task description for the agent")
-    parser.add_argument("--review", action="store_true", help="Post a Claude review on the created PR")
     args = parser.parse_args()
 
     task = args.task
@@ -42,6 +50,7 @@ def main():
     # ── Step 3: Stream ────────────────────────────────────────────────────────
     # Send the task and process events
     current_branch = None
+    pr_url = None
     pr_created = False
 
     try:
@@ -86,7 +95,9 @@ def main():
                             )
                             if success:
                                 pr_created = True
-                                if args.review:
+                                pr_url = output
+                                answer = input("\nRequest a Claude review? [y/N] ").strip().lower()
+                                if answer == "y":
                                     review_pr(output)
                             client.beta.sessions.events.send(
                                 session.id,
@@ -99,8 +110,21 @@ def main():
                                 ],
                             )
                     case "session.status_idle":
-                        print("\n\nAgent finished.")
-                        break
+                        reply = input("\nReply (or press Enter to finish): ").strip()
+                        if not reply:
+                            print("\nAgent finished.")
+                            if pr_url:
+                                print(f"PR: {pr_url}")
+                            break
+                        client.beta.sessions.events.send(
+                            session.id,
+                            events=[
+                                {
+                                    "type": "user.message",
+                                    "content": [{"type": "text", "text": reply}],
+                                }
+                            ],
+                        )
     except Exception as e:
         print(f"\nError: {e}")
         if current_branch and not pr_created:

@@ -5,6 +5,8 @@ from config import CONFIG_FILE
 
 _SYSTEM_PROMPT = """You are a coding agent working on a Python CLI task manager application (task_manager.py).
 
+Always begin your response with a short message describing what you're about to do before calling any tools.
+
 The repo is mounted at /workspace/repo. The main file is /workspace/repo/task_manager.py.
 
 The app stores tasks in tasks.json and supports these commands:
@@ -32,7 +34,7 @@ When given a task:
 ## 🧪 Test
 <how to manually verify the fix>
 
-7. Report clearly what you changed and why."""
+7. Report clearly what you changed and why. Do not include the PR URL in your report — it will be displayed separately."""
 
 _TOOLS = [
     {"type": "agent_toolset_20260401"},
