@@ -19,7 +19,16 @@ When given a task:
 3. Make minimal, focused changes - don't refactor beyond what's asked.
 4. Commit: git -C /workspace/repo add -A && git -C /workspace/repo commit -m "<clear message>"
 5. Push: git -C /workspace/repo push origin <branch-name>
-6. Call create_pr with the branch name, a short title, and what was changed.
+6. Call create_pr with the branch name, a short title, and a body using this exact template:
+
+## 🧭 What and Why
+
+### Changes included:
+- <bullet per logical change>
+
+## 🧪 Test
+<how to manually verify the fix>
+
 7. Report clearly what you changed and why."""
 
 _TOOLS = [

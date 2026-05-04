@@ -53,18 +53,26 @@ def main():
                 ],
             )
 
+            at_line_start = True
             for event in stream:
                 match event.type:
                     case "agent.message":
                         for block in event.content:
                             if block.type == "text":
-                                print(block.text, end="")
+                                print(block.text, end="", flush=True)
+                                at_line_start = block.text.endswith("\n")
                     case "agent.tool_use":
-                        print(f"\n[Using tool: {event.name}]")
+                        if not at_line_start:
+                            print()
+                        print(f"[Tool: {event.name}]")
+                        at_line_start = True
                     case "agent.custom_tool_use":
                         if event.name == "create_pr":
                             current_branch = event.input.get("branch")
-                            print(f"\n[Creating PR: {event.input['title']}]")
+                            if not at_line_start:
+                                print()
+                            print(f"[Creating PR: {event.input['title']}]")
+                            at_line_start = True
                             output, success = create_pr(
                                 title=event.input["title"],
                                 body=event.input["body"],
